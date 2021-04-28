@@ -16,4 +16,16 @@ public class DateUtils {
         SimpleDateFormat sj = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         return sj.format(date);
     }
+
+    /**
+     * Date转年月日格式
+     *
+     * @param Object
+     * @return String
+     * @author
+     */
+    public static String D2NYR(Object date) {
+        SimpleDateFormat sj = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        return sj.format(date);
+    }
 }

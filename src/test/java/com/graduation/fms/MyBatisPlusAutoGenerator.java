@@ -31,9 +31,9 @@ public class MyBatisPlusAutoGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://localhost:3306/fms?serverTimezone=Asia/Shanghai&characterEncoding=utf8");
+        dsc.setUrl("jdbc:mysql://106.52.185.63:3307/zp_fms?serverTimezone=Asia/Shanghai&characterEncoding=utf8");
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");
-        dsc.setUsername("root");
+        dsc.setUsername("zp");
         dsc.setPassword("123456");
         dsc.setDbType(DbType.MYSQL);
         mpg.setDataSource(dsc);
@@ -51,7 +51,7 @@ public class MyBatisPlusAutoGenerator {
 
         // 策略配置
         StrategyConfig strategy = new StrategyConfig();
-        strategy.setInclude("user");
+        strategy.setInclude("money");
         strategy.setNaming(NamingStrategy.underline_to_camel);
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
         strategy.setEntityLombokModel(true);
