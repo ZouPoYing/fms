@@ -21,28 +21,28 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author MyBatisPlusAutoGenerator
- * @since 2021-04-27
+ * @since 2021-04-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="Money对象", description="")
-public class Money implements Serializable {
+@ApiModel(value="Ie对象", description="")
+public class Ie implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "资金编号")
-    @TableId(value = "money_id", type = IdType.AUTO)
-    private Integer moneyId;
+    @ApiModelProperty(value = "收支编号")
+    @TableId(value = "ie_id", type = IdType.AUTO)
+    private Integer ieId;
 
     @ApiModelProperty(value = "用户编号")
     private Integer userId;
 
-    @ApiModelProperty(value = "金额")
-    private BigDecimal money;
-
-    @ApiModelProperty(value = "资金类型")
+    @ApiModelProperty(value = "金额类型")
     private String moneyType;
+
+    @ApiModelProperty(value = "收支金额")
+    private BigDecimal ie;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "创建时间")
@@ -56,38 +56,26 @@ public class Money implements Serializable {
 
     @Override
     public String toString() {
-        return "Money{" +
-                "moneyId=" + moneyId +
+        return "Ie{" +
+                "ieId=" + ieId +
                 ", userId=" + userId +
-                ", money=" + money +
                 ", moneyType='" + moneyType + '\'' +
+                ", ie=" + ie +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
-                ", fundId=" + fundId +
                 '}';
-    }
-
-    @ApiModelProperty(value = "基金编号")
-    private Integer fundId;
-
-    public Integer getFundId() {
-        return fundId;
-    }
-
-    public void setFundId(Integer fundId) {
-        this.fundId = fundId;
     }
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
 
-    public Integer getMoneyId() {
-        return moneyId;
+    public Integer getIeId() {
+        return ieId;
     }
 
-    public void setMoneyId(Integer moneyId) {
-        this.moneyId = moneyId;
+    public void setIeId(Integer ieId) {
+        this.ieId = ieId;
     }
 
     public Integer getUserId() {
@@ -98,20 +86,20 @@ public class Money implements Serializable {
         this.userId = userId;
     }
 
-    public BigDecimal getMoney() {
-        return money;
-    }
-
-    public void setMoney(BigDecimal money) {
-        this.money = money;
-    }
-
     public String getMoneyType() {
         return moneyType;
     }
 
     public void setMoneyType(String moneyType) {
         this.moneyType = moneyType;
+    }
+
+    public BigDecimal getIe() {
+        return ie;
+    }
+
+    public void setIe(BigDecimal ie) {
+        this.ie = ie;
     }
 
     public Date getCreateTime() {

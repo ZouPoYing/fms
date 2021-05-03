@@ -111,8 +111,54 @@ public class UserController {
         return result;
     }
 
+    @RequestMapping("/loginByAdmin")
+    public Map<String, Object> loginByAdmin(@RequestBody Map<String, String> params) {
+        String userName = params.get("userName");
+        String password = params.get("password");
+        Map<String, Object> result = new HashMap<>();
+        if (userName.isEmpty() || password.isEmpty()) {
+            result.put("msg", "参数不能为空");
+            return result;
+        }
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper
+                .eq("user_name", userName)
+                .eq("password", password)
+                .eq("user_type", "管理员");;
+        if (userMapper.selectList(wrapper).size()<=0) {
+            result.put("msg", "用户名或密码错误");
+            return result;
+        }
+        result.put("success", true);
+        result.put("userId", userMapper.selectList(wrapper).get(0).getUserId());
+        return result;
+    }
+
+    @RequestMapping("/loginByUser")
+    public Map<String, Object> loginByUser(@RequestBody Map<String, String> params) {
+        String userName = params.get("userName");
+        String password = params.get("password");
+        Map<String, Object> result = new HashMap<>();
+        if (userName.isEmpty() || password.isEmpty()) {
+            result.put("msg", "参数不能为空");
+            return result;
+        }
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper
+                .eq("user_name", userName)
+                .eq("password", password)
+                .eq("user_type", "普通用户");
+        if (userMapper.selectList(wrapper).size()<=0) {
+            result.put("msg", "用户名或密码错误");
+            return result;
+        }
+        result.put("success", true);
+        result.put("userId", userMapper.selectList(wrapper).get(0).getUserId());
+        return result;
+    }
+
     @RequestMapping("/getUserById")
-    public Map<String, Object> getUserById(@RequestBody Map<String, String> params) {
+    public Map<String, Object> getUserById(@RequestBody Map<String, String> params) throws Exception {
         String userId = params.get("userId");
         Map<String, Object> result = new HashMap<>();
         if (userId.isEmpty()) {

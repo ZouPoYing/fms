@@ -21,28 +21,31 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author MyBatisPlusAutoGenerator
- * @since 2021-04-27
+ * @since 2021-05-01
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="Money对象", description="")
-public class Money implements Serializable {
+@ApiModel(value="MoneyDetail对象", description="")
+public class MoneyDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "资金编号")
-    @TableId(value = "money_id", type = IdType.AUTO)
+    @ApiModelProperty(value = "转账详情主键")
+    @TableId(value = "money_detail_id", type = IdType.AUTO)
+    private Integer moneyDetailId;
+
+    @ApiModelProperty(value = "金额主键")
     private Integer moneyId;
 
-    @ApiModelProperty(value = "用户编号")
-    private Integer userId;
+    @ApiModelProperty(value = "收入或支出")
+    private String type;
 
     @ApiModelProperty(value = "金额")
     private BigDecimal money;
 
-    @ApiModelProperty(value = "资金类型")
-    private String moneyType;
+    @ApiModelProperty(value = "源")
+    private String toFor;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "创建时间")
@@ -50,36 +53,41 @@ public class Money implements Serializable {
     private Date createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @ApiModelProperty(value = "更新时间")
+    @ApiModelProperty(value = "修改时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @Override
     public String toString() {
-        return "Money{" +
-                "moneyId=" + moneyId +
-                ", userId=" + userId +
+        return "MoneyDetail{" +
+                "moneyDetailId=" + moneyDetailId +
+                ", moneyId=" + moneyId +
+                ", type='" + type + '\'' +
                 ", money=" + money +
-                ", moneyType='" + moneyType + '\'' +
+                ", toFor='" + toFor + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
-                ", fundId=" + fundId +
                 '}';
     }
 
-    @ApiModelProperty(value = "基金编号")
-    private Integer fundId;
-
-    public Integer getFundId() {
-        return fundId;
+    public String getToFor() {
+        return toFor;
     }
 
-    public void setFundId(Integer fundId) {
-        this.fundId = fundId;
+    public void setToFor(String toFor) {
+        this.toFor = toFor;
     }
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
+    }
+
+    public Integer getMoneyDetailId() {
+        return moneyDetailId;
+    }
+
+    public void setMoneyDetailId(Integer moneyDetailId) {
+        this.moneyDetailId = moneyDetailId;
     }
 
     public Integer getMoneyId() {
@@ -90,12 +98,12 @@ public class Money implements Serializable {
         this.moneyId = moneyId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public String getType() {
+        return type;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public BigDecimal getMoney() {
@@ -104,14 +112,6 @@ public class Money implements Serializable {
 
     public void setMoney(BigDecimal money) {
         this.money = money;
-    }
-
-    public String getMoneyType() {
-        return moneyType;
-    }
-
-    public void setMoneyType(String moneyType) {
-        this.moneyType = moneyType;
     }
 
     public Date getCreateTime() {

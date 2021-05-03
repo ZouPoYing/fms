@@ -4,7 +4,12 @@ package com.graduation.fms.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.graduation.fms.dao.Fund;
 import com.graduation.fms.dao.Money;
+import com.graduation.fms.dao.MoneyDetail;
+import com.graduation.fms.dao.Ud;
 import com.graduation.fms.mapper.FundMapper;
+import com.graduation.fms.mapper.MoneyDetailMapper;
+import com.graduation.fms.mapper.MoneyMapper;
+import com.graduation.fms.mapper.UdMapper;
 import com.graduation.fms.utils.DateUtils;
 import com.graduation.fms.utils.MapUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +41,15 @@ public class FundController {
 
     @Resource
     private FundMapper fundMapper;
+
+    @Resource
+    private UdMapper udMapper;
+
+    @Resource
+    private MoneyMapper moneyMapper;
+
+    @Resource
+    private MoneyDetailMapper moneyDetailMapper;
 
     @RequestMapping("/addFund")
     public Map<String, Object> addFund(@RequestBody Map<String, String> params) throws Exception {
@@ -172,6 +187,127 @@ public class FundController {
         Fund fund = fundMapper.selectById(Integer.valueOf(fundId));
         result.putAll(MapUtils.java2Map(fund));
         result.put("createTime", DateUtils.D2NYR(fund.getCreateTime()));
+        BigDecimal allZD = new BigDecimal("0.00");
+        BigDecimal ZD = new BigDecimal("0.00");
+        QueryWrapper<Ud> wrapper = new QueryWrapper<>();
+        wrapper.eq("fund_id",fundId);
+        List<Ud> uds = udMapper.selectList(wrapper);
+        if (!uds.isEmpty()) {
+            for (Ud ud : uds) {
+                allZD = allZD.add(ud.getUd());
+                ZD = ud.getUd();
+            }
+        }
+        result.put("allZD", allZD+"%");
+        result.put("ZD", ZD+"%");
+        result.put("newFundMoney", ((BigDecimal) result.get("fundMoney")).multiply(allZD.divide(new BigDecimal(100.00),4,BigDecimal.ROUND_HALF_UP).add(new BigDecimal(1.00))));
+        return result;
+    }
+
+    @RequestMapping("/getFundLineByFundId")
+    public List<Map<String, Object>> getFundLineByFundId(@RequestBody Map<String, String> params) throws Exception {
+        String fundId = params.get("fundId");
+        if (fundId == "null" || fundId == null ||fundId.isEmpty()) {
+            return null;
+        }
+        QueryWrapper<Ud> wrapper = new QueryWrapper<>();
+        wrapper.eq("fund_id",fundId);
+        List<Ud> uds = udMapper.selectList(wrapper);
+        List<Map<String, Object>> results = new ArrayList<>();
+        BigDecimal aZD = new BigDecimal("0.00");
+        if (!uds.isEmpty()) {
+            for (Ud ud : uds) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("date",DateUtils.D2S(ud.getDay()).substring(2,10));
+                aZD = aZD.add(ud.getUd());
+                result.put("aZD",aZD);
+                results.add(result);
+            }
+        }
+        return results;
+    }
+
+    @RequestMapping("/sellOrBuy")
+    public Map<String, Object> sellOrBuy(@RequestBody Map<String, String> params) throws Exception {
+        String fundId = params.get("fundId");
+        String userId = params.get("userId");
+        String title = params.get("title");
+        String type = params.get("type");
+        String money = params.get("money");
+        Map<String, Object> result = new HashMap<>();
+        if (fundId.isEmpty() || userId.isEmpty() || title.isEmpty() || type.isEmpty() || money.isEmpty()) {
+            result.put("msg", "参数不能为空");
+            return result;
+        }
+        if (title.equals("买入")) {
+            QueryWrapper<Money> wrapper = new QueryWrapper<>();
+            wrapper.eq("user_id",userId).eq("money_type", type);
+            Money money1 = moneyMapper.selectOne(wrapper);
+            if (money1==null || money1.getMoney().compareTo(new BigDecimal(money))==-1) {
+                result.put("msg", "未绑定"+type+"或"+type+"余额不足");
+                return result;
+            }
+            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
+            wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
+            Money money3 = moneyMapper.selectOne(wrapper1);
+            if (money3 == null) {
+                Money money2 = new Money();
+                money2.setMoney(new BigDecimal(money));
+                money2.setUserId(Integer.valueOf(userId));
+                money2.setFundId(Integer.valueOf(fundId));
+                money2.setMoneyType("基金");
+                moneyMapper.insert(money2);
+            } else {
+                money3.setMoney(money3.getMoney().add(new BigDecimal(money)));
+                moneyMapper.updateById(money3);
+            }
+            money1.setMoney(money1.getMoney().subtract(new BigDecimal(money)));
+            moneyMapper.updateById(money1);
+            MoneyDetail moneyDetail = new MoneyDetail();
+            moneyDetail.setMoneyId(money1.getMoneyId());
+            moneyDetail.setType("支出");
+            moneyDetail.setMoney(new BigDecimal(money));
+            moneyDetail.setToFor("买基金");
+            moneyDetailMapper.insert(moneyDetail);
+        } else {
+            QueryWrapper<Money> wrapper = new QueryWrapper<>();
+            wrapper.eq("user_id",userId).eq("money_type", type);
+            Money money1 = moneyMapper.selectOne(wrapper);
+            if (money1==null) {
+                result.put("msg", "未绑定"+type);
+                return result;
+            }
+            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
+            wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
+            Money money3 = moneyMapper.selectOne(wrapper1);
+            if (money3 == null || money3.getMoney().compareTo(new BigDecimal(money))==-1) {
+                result.put("msg", "你没买该基金或者你的基金里的钱不够"+money);
+                return result;
+            }
+            if (money3.getMoney().compareTo(new BigDecimal(money))==0){
+                moneyMapper.deleteById(money3.getMoneyId());
+                money1.setMoney(money1.getMoney().add(new BigDecimal(money)));
+                moneyMapper.updateById(money1);
+                MoneyDetail moneyDetail = new MoneyDetail();
+                moneyDetail.setMoneyId(money1.getMoneyId());
+                moneyDetail.setType("收入");
+                moneyDetail.setMoney(new BigDecimal(money));
+                moneyDetail.setToFor("卖基金");
+                moneyDetailMapper.insert(moneyDetail);
+            } else {
+                money3.setMoney(money3.getMoney().subtract(new BigDecimal(money)));
+                moneyMapper.updateById(money3);
+                money1.setMoney(money1.getMoney().add(new BigDecimal(money)));
+                moneyMapper.updateById(money1);
+                MoneyDetail moneyDetail = new MoneyDetail();
+                moneyDetail.setMoneyId(money1.getMoneyId());
+                moneyDetail.setType("收入");
+                moneyDetail.setMoney(new BigDecimal(money));
+                moneyDetail.setToFor("卖基金");
+                moneyDetailMapper.insert(moneyDetail);
+            }
+        }
+        result.put("success", true);
         return result;
     }
 }

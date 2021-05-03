@@ -3,7 +3,9 @@ package com.graduation.fms.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.graduation.fms.dao.Money;
+import com.graduation.fms.dao.MoneyDetail;
 import com.graduation.fms.dao.User;
+import com.graduation.fms.mapper.MoneyDetailMapper;
 import com.graduation.fms.mapper.MoneyMapper;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +34,9 @@ public class MoneyController {
 
     @Resource
     private MoneyMapper moneyMapper;
+
+    @Resource
+    private MoneyDetailMapper moneyDetailMapper;
 
     @RequestMapping("/getMyMoney")
     public Map<String, Object> getMyMoney(@RequestBody Map<String, String> params) {
@@ -182,12 +187,92 @@ public class MoneyController {
             Money money1 = moneyMapper.selectById(Integer.valueOf(moneyId));
             money.setMoney(money.getMoney().add(money1.getMoney()));
             moneyMapper.updateById(money);
+        } else if (type.equals("recharge")) {
+            if (moneyId.isEmpty() || moneyId=="null") {
+                result.put("msg", "参数不能为空");
+                return result;
+            }
+            QueryWrapper<Money> wrapper = new QueryWrapper<>();
+            wrapper
+                    .eq("user_id", userId)
+                    .eq("money_type", "银行卡");
+            Money yhk = moneyMapper.selectOne(wrapper);
+            if (yhk==null || yhk.getMoney().compareTo(new BigDecimal(addmoney))==-1) {
+                result.put("msg", "未绑定银行卡或银行卡金额不足");
+                return result;
+            }
+            yhk.setMoney(yhk.getMoney().subtract(new BigDecimal(addmoney)));
+            moneyMapper.updateById(yhk);
+            MoneyDetail moneyDetail = new MoneyDetail();
+            moneyDetail.setMoneyId(yhk.getMoneyId());
+            moneyDetail.setMoney(new BigDecimal(addmoney));
+            moneyDetail.setType("支出");
+            moneyDetail.setToFor(type);
+            moneyDetailMapper.insert(moneyDetail);
+            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
+            wrapper1
+                    .eq("user_id", userId)
+                    .eq("money_type", moneyType);
+            Money wz = moneyMapper.selectOne(wrapper1);
+            wz.setMoney(wz.getMoney().add(new BigDecimal(addmoney)));
+            moneyMapper.updateById(wz);
+            moneyDetail.setMoneyId(wz.getMoneyId());
+            moneyDetail.setType("收入");
+            moneyDetail.setToFor("银行卡");
+            moneyDetailMapper.insert(moneyDetail);
+            result.put("success", true);
+            return result;
+        } else if (type.equals("withdraw")) {
+            if (moneyId.isEmpty() || moneyId=="null") {
+                result.put("msg", "参数不能为空");
+                return result;
+            }
+            QueryWrapper<Money> wrapper = new QueryWrapper<>();
+            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
+            wrapper1
+                    .eq("user_id", userId)
+                    .eq("money_type", moneyType);
+            Money wz = moneyMapper.selectOne(wrapper1);
+            if (wz==null || wz.getMoney().compareTo(new BigDecimal(addmoney))==-1) {
+                result.put("msg", "未绑定"+moneyType+"或"+moneyType+"金额不足");
+                return result;
+            }
+            wz.setMoney(wz.getMoney().subtract(new BigDecimal(addmoney)));
+            moneyMapper.updateById(wz);
+            MoneyDetail moneyDetail = new MoneyDetail();
+            moneyDetail.setMoneyId(wz.getMoneyId());
+            moneyDetail.setMoney(new BigDecimal(addmoney));
+            moneyDetail.setType("支出");
+            moneyDetail.setToFor("银行卡");
+            moneyDetailMapper.insert(moneyDetail);
+            wrapper
+                    .eq("user_id", userId)
+                    .eq("money_type", "银行卡");
+            Money yhk = moneyMapper.selectOne(wrapper);
+            yhk.setMoney(yhk.getMoney().add(new BigDecimal(addmoney)));
+            moneyMapper.updateById(yhk);
+            moneyDetail.setMoneyId(yhk.getMoneyId());
+            moneyDetail.setType("收入");
+            moneyDetail.setToFor(type);
+            moneyDetailMapper.insert(moneyDetail);
+            result.put("success", true);
+            return result;
         } else {
             result.put("msg", "参数错误");
             return result;
         }
         result.put("success", true);
         return result;
+    }
+
+    @RequestMapping("/getMyJJ")
+    public List<Map<String, Object>> getMyJJ(@RequestBody Map<String, String> params) {
+        String userId = params.get("userId");
+        if (userId.isEmpty()) {
+            return null;
+        }
+        List<Map<String, Object>> moneyList = moneyMapper.getMyJJ(Integer.valueOf(userId));
+        return moneyList;
     }
 }
 

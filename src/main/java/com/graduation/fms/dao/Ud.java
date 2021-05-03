@@ -21,28 +21,29 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author MyBatisPlusAutoGenerator
- * @since 2021-04-27
+ * @since 2021-04-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="Money对象", description="")
-public class Money implements Serializable {
+@ApiModel(value="Ud对象", description="")
+public class Ud implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "资金编号")
-    @TableId(value = "money_id", type = IdType.AUTO)
-    private Integer moneyId;
+    @ApiModelProperty(value = "涨跌编号")
+    @TableId(value = "ud_id", type = IdType.AUTO)
+    private Integer udId;
 
-    @ApiModelProperty(value = "用户编号")
-    private Integer userId;
+    @ApiModelProperty(value = "基金编号")
+    private Integer fundId;
 
-    @ApiModelProperty(value = "金额")
-    private BigDecimal money;
+    @ApiModelProperty(value = "涨跌值百分点")
+    private BigDecimal ud;
 
-    @ApiModelProperty(value = "资金类型")
-    private String moneyType;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @ApiModelProperty(value = "涨跌时间")
+    private Date day;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "创建时间")
@@ -50,25 +51,33 @@ public class Money implements Serializable {
     private Date createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @ApiModelProperty(value = "更新时间")
+    @ApiModelProperty(value = "修改时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @Override
     public String toString() {
-        return "Money{" +
-                "moneyId=" + moneyId +
-                ", userId=" + userId +
-                ", money=" + money +
-                ", moneyType='" + moneyType + '\'' +
+        return "Ud{" +
+                "udId=" + udId +
+                ", fundId=" + fundId +
+                ", ud=" + ud +
+                ", day=" + day +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
-                ", fundId=" + fundId +
                 '}';
     }
 
-    @ApiModelProperty(value = "基金编号")
-    private Integer fundId;
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public Integer getUdId() {
+        return udId;
+    }
+
+    public void setUdId(Integer udId) {
+        this.udId = udId;
+    }
 
     public Integer getFundId() {
         return fundId;
@@ -78,40 +87,20 @@ public class Money implements Serializable {
         this.fundId = fundId;
     }
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
+    public BigDecimal getUd() {
+        return ud;
     }
 
-    public Integer getMoneyId() {
-        return moneyId;
+    public void setUd(BigDecimal ud) {
+        this.ud = ud;
     }
 
-    public void setMoneyId(Integer moneyId) {
-        this.moneyId = moneyId;
+    public Date getDay() {
+        return day;
     }
 
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public BigDecimal getMoney() {
-        return money;
-    }
-
-    public void setMoney(BigDecimal money) {
-        this.money = money;
-    }
-
-    public String getMoneyType() {
-        return moneyType;
-    }
-
-    public void setMoneyType(String moneyType) {
-        this.moneyType = moneyType;
+    public void setDay(Date day) {
+        this.day = day;
     }
 
     public Date getCreateTime() {
