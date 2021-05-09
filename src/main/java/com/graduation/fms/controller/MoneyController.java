@@ -187,7 +187,7 @@ public class MoneyController {
             Money money1 = moneyMapper.selectById(Integer.valueOf(moneyId));
             money.setMoney(money.getMoney().add(money1.getMoney()));
             moneyMapper.updateById(money);
-        } else if (type.equals("recharge")) {
+        } else if (type.equals("recharge")) {//充值
             if (moneyId.isEmpty() || moneyId=="null") {
                 result.put("msg", "参数不能为空");
                 return result;
@@ -222,7 +222,7 @@ public class MoneyController {
             moneyDetailMapper.insert(moneyDetail);
             result.put("success", true);
             return result;
-        } else if (type.equals("withdraw")) {
+        } else if (type.equals("withdraw")) {//提现
             if (moneyId.isEmpty() || moneyId=="null") {
                 result.put("msg", "参数不能为空");
                 return result;

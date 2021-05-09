@@ -110,7 +110,7 @@ public class MoneyDetailController {
             result.put("msg", "未绑定"+moneyType);
             return result;
         }
-        if (type=="收入") {
+        if (type.equals("收入")) {
             money1.setMoney(money1.getMoney().add(new BigDecimal(money)));
             moneyMapper.updateById(money1);
             MoneyDetail moneyDetail = new MoneyDetail();

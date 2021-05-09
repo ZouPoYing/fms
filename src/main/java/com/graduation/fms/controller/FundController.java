@@ -275,7 +275,7 @@ public class FundController {
             Money money1 = moneyMapper.selectOne(wrapper);
             if (money1==null) {
                 result.put("msg", "未绑定"+type);
-                return result;
+                return result; 
             }
             QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
             wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
