@@ -4,9 +4,13 @@ package com.graduation.fms.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.graduation.fms.dao.Money;
 import com.graduation.fms.dao.MoneyDetail;
+import com.graduation.fms.dao.Ud;
 import com.graduation.fms.dao.User;
 import com.graduation.fms.mapper.MoneyDetailMapper;
 import com.graduation.fms.mapper.MoneyMapper;
+import com.graduation.fms.mapper.UdMapper;
+import com.graduation.fms.utils.ListUtils;
+import com.oracle.webservices.internal.api.message.BaseDistributedPropertySet;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +41,9 @@ public class MoneyController {
 
     @Resource
     private MoneyDetailMapper moneyDetailMapper;
+
+    @Resource
+    private UdMapper udMapper;
 
     @RequestMapping("/getMyMoney")
     public Map<String, Object> getMyMoney(@RequestBody Map<String, String> params) {
@@ -272,7 +279,21 @@ public class MoneyController {
             return null;
         }
         List<Map<String, Object>> moneyList = moneyMapper.getMyJJ(Integer.valueOf(userId));
-        return moneyList;
+        for (Map<String, Object> map : moneyList) {
+            List<Map<String, Object>> udList = udMapper.getYUdByFundID((Integer) map.get("fundId"));
+            if (udList.size()==0) {
+                map.put("ud", "0.00");
+                map.put("y", "0");
+            } else {
+                BigDecimal ud = new BigDecimal(udList.get(0).get("ud").toString());
+                map.put("ud", ud);
+                BigDecimal money = new BigDecimal(map.get("money").toString());
+                BigDecimal udMoney = money.subtract(money.divide(new BigDecimal("1.00").add(ud.divide(new BigDecimal("100")))));
+                map.put("y", udMoney);
+            }
+            map.put("c", new BigDecimal(map.get("money").toString()).subtract(new BigDecimal(map.get("initMoney").toString())));
+        }
+        return ListUtils.combineMap(moneyList,"fundId","money");
     }
 }
 

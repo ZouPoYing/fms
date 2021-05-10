@@ -41,6 +41,9 @@ public class Money implements Serializable {
     @ApiModelProperty(value = "金额")
     private BigDecimal money;
 
+    @ApiModelProperty(value = "初始金额")
+    private BigDecimal initMoney;
+
     @ApiModelProperty(value = "资金类型")
     private String moneyType;
 
@@ -60,11 +63,20 @@ public class Money implements Serializable {
                 "moneyId=" + moneyId +
                 ", userId=" + userId +
                 ", money=" + money +
+                ", initMoney=" + initMoney +
                 ", moneyType='" + moneyType + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", fundId=" + fundId +
                 '}';
+    }
+
+    public BigDecimal getInitMoney() {
+        return initMoney;
+    }
+
+    public void setInitMoney(BigDecimal initMoney) {
+        this.initMoney = initMoney;
     }
 
     @ApiModelProperty(value = "基金编号")
