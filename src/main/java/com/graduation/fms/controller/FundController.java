@@ -21,10 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * <p>
@@ -239,6 +237,10 @@ public class FundController {
             result.put("msg", "参数不能为空");
             return result;
         }
+        if (Integer.valueOf(money) < 100) {
+            result.put("msg", "100起售");
+            return result;
+        }
         if (title.equals("买入")) {
             QueryWrapper<Money> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id",userId).eq("money_type", type);
@@ -247,20 +249,13 @@ public class FundController {
                 result.put("msg", "未绑定"+type+"或"+type+"余额不足");
                 return result;
             }
-            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
-            wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
-            Money money3 = moneyMapper.selectOne(wrapper1);
-            if (money3 == null) {
-                Money money2 = new Money();
-                money2.setMoney(new BigDecimal(money));
-                money2.setUserId(Integer.valueOf(userId));
-                money2.setFundId(Integer.valueOf(fundId));
-                money2.setMoneyType("基金");
-                moneyMapper.insert(money2);
-            } else {
-                money3.setMoney(money3.getMoney().add(new BigDecimal(money)));
-                moneyMapper.updateById(money3);
-            }
+            Money money2 = new Money();
+            money2.setMoney(new BigDecimal(money));
+            money2.setInitMoney(new BigDecimal(money));
+            money2.setUserId(Integer.valueOf(userId));
+            money2.setFundId(Integer.valueOf(fundId));
+            money2.setMoneyType("基金");
+            moneyMapper.insert(money2);
             money1.setMoney(money1.getMoney().subtract(new BigDecimal(money)));
             moneyMapper.updateById(money1);
             MoneyDetail moneyDetail = new MoneyDetail();
@@ -277,38 +272,36 @@ public class FundController {
                 result.put("msg", "未绑定"+type);
                 return result; 
             }
-            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
-            wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
-            Money money3 = moneyMapper.selectOne(wrapper1);
-            if (money3 == null || money3.getMoney().compareTo(new BigDecimal(money))==-1) {
+            Map<String, Object> money3 = moneyMapper.getMyJJMoneyByFundId(Integer.valueOf(userId),Integer.valueOf(fundId)).get(0);
+            BigDecimal allMoney = new BigDecimal(money3.get("allmoney").toString());
+            BigDecimal hasMoney = new BigDecimal(money);
+            if (money3 == null || allMoney.compareTo(new BigDecimal(money))==-1) {
                 result.put("msg", "你没买该基金或者你的基金里的钱不够"+money);
                 return result;
             }
-            if (money3.getMoney().compareTo(new BigDecimal(money))==0){
-                moneyMapper.deleteById(money3.getMoneyId());
-                money1.setMoney(money1.getMoney().add(new BigDecimal(money)));
-                moneyMapper.updateById(money1);
-                MoneyDetail moneyDetail = new MoneyDetail();
-                moneyDetail.setMoneyId(money1.getMoneyId());
-                moneyDetail.setType("收入");
-                moneyDetail.setMoney(new BigDecimal(money));
-                moneyDetail.setToFor("卖基金");
-                moneyDetailMapper.insert(moneyDetail);
-            } else {
-                money3.setMoney(money3.getMoney().subtract(new BigDecimal(money)));
-                moneyMapper.updateById(money3);
-                money1.setMoney(money1.getMoney().add(new BigDecimal(money)));
-                moneyMapper.updateById(money1);
-                MoneyDetail moneyDetail = new MoneyDetail();
-                moneyDetail.setMoneyId(money1.getMoneyId());
-                moneyDetail.setType("收入");
-                moneyDetail.setMoney(new BigDecimal(money));
-                moneyDetail.setToFor("卖基金");
-                moneyDetailMapper.insert(moneyDetail);
+            QueryWrapper<Money> wrapper1 = new QueryWrapper<>();
+            wrapper1.eq("user_id",userId).eq("money_type", "基金").eq("fund_id", fundId);
+            List<Money> moneyList = moneyMapper.selectList(wrapper1);
+            for (Money map : moneyList) {
+                if (hasMoney.compareTo(map.getMoney())>-1) {
+                    hasMoney = hasMoney.subtract(map.getMoney());
+                    moneyMapper.deleteById(map.getMoneyId());
+                } else {
+                    map.setMoney(map.getMoney().subtract(hasMoney));
+                    moneyMapper.updateById(map);
+                    break;
+                }
             }
+            MoneyDetail moneyDetail = new MoneyDetail();
+            moneyDetail.setMoneyId(money1.getMoneyId());
+            moneyDetail.setType("收入");
+            moneyDetail.setMoney(new BigDecimal(money));
+            moneyDetail.setToFor("卖基金");
+            moneyDetailMapper.insert(moneyDetail);
         }
         result.put("success", true);
         return result;
     }
+
 }
 
