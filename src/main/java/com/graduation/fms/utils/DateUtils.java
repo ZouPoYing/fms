@@ -135,4 +135,47 @@ public class DateUtils {
         listSort(list, left, j-1);
         listSort(list, j+1, right);
     }
+
+    /**
+     * 根据file字段排序
+     *
+     * @param List<Map<String, Object>>
+     * @return List<Map<String, Object>>
+     * @author
+     */
+    public static void listSort(List<Map<String, Object>> list, int left, int right, String file) throws Exception {
+        if(left>right){
+            return;
+        }
+        //设置最左边的元素为基准值
+        Integer key= Integer.valueOf(list.get(left).get(file).toString());
+        //数组中比key小的放在左边，比key大的放在右边，key值下标为i
+        int i=left;
+        int j=right;
+        while(i<j){
+            //j向左移，直到遇到比key小的值
+            while(key <= Integer.valueOf(list.get(j).get(file).toString()) && i<j){
+                j--;
+            }
+            //i向右移，直到遇到比key大的值
+            while(key >= Integer.valueOf(list.get(i).get(file).toString()) && i<j){
+                i++;
+            }
+            //i和j指向的元素交换
+            if(i<j){
+                int t = Integer.valueOf(list.get(j).get(file).toString());
+                list.get(j).put("date",list.get(i).get(file));
+                list.get(i).put("date",t);
+//                list.set(j,list.get(i));
+//                list.set(i,t);
+            }
+        }
+        //最后将基准为与i和j相等位置的数字交换
+        list.get(left).put("date",list.get(i).get(file));
+//        list.set(left,list.get(i));
+        list.get(i).put("date",key);
+//        list.set(i,key);
+        listSort(list, left, j-1, file);
+        listSort(list, j+1, right, file);
+    }
 }

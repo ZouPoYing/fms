@@ -155,6 +155,7 @@ public class MoneyDetailController {
         } else {
             statisticsDetail = moneyDetailMapper.getStatisticsDetail(month,type,moneyId);
         }
+        DateUtils.listSort(statisticsDetail,0,statisticsDetail.size()-1,"date");
         return statisticsDetail;
     }
 

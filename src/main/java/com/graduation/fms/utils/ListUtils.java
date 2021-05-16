@@ -50,4 +50,33 @@ public class ListUtils {
         }
         return countList;
     }
+
+    /**
+     *根据 combineField字段 合并 money1字段和money2字段 money为BigDecimal类型
+     * @param
+     * @param dataList 原始数据
+     * @return
+     */
+    public static List<Map<String, Object>> combineMap(List<Map<String, Object>> dataList, String combineField,  String money1,  String money2){
+        List<Map<String, Object>> countList = new ArrayList<Map<String,Object>>();
+        for (int i = 0; i < dataList.size(); i++) {
+            String oldCombineField = String.valueOf(dataList.get(i).get(combineField));
+            int flag = 0;
+            for (int j = 0; j < countList.size(); j++) {
+                String newCombineField = String.valueOf(countList.get(j).get(combineField));
+                if (oldCombineField.equals(newCombineField)) {
+                    BigDecimal afterSaleProfit = new BigDecimal(dataList.get(i).get(money1).toString()).add(new BigDecimal(countList.get(j).get(money1).toString()));
+                    countList.get(j).put(money1, afterSaleProfit);
+                    BigDecimal afterSaleProfit1 = new BigDecimal(dataList.get(i).get(money2).toString()).add(new BigDecimal(countList.get(j).get(money2).toString()));
+                    countList.get(j).put(money2, afterSaleProfit1);
+                    flag = 1;
+                    break;
+                }
+            }
+            if (flag == 0) {
+                countList.add(dataList.get(i));
+            }
+        }
+        return countList;
+    }
 }

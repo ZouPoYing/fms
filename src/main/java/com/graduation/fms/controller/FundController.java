@@ -237,7 +237,7 @@ public class FundController {
             result.put("msg", "参数不能为空");
             return result;
         }
-        if (Integer.valueOf(money) < 100) {
+        if (Integer.valueOf(money) < 100 && title.equals("买入")) {
             result.put("msg", "100起售");
             return result;
         }

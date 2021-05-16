@@ -279,7 +279,8 @@ public class MoneyController {
             return null;
         }
         List<Map<String, Object>> moneyList = moneyMapper.getMyJJ(Integer.valueOf(userId));
-        for (Map<String, Object> map : moneyList) {
+        List<Map<String, Object>> list = ListUtils.combineMap(moneyList, "fundId", "money", "initMoney");
+        for (Map<String, Object> map : list) {
             List<Map<String, Object>> udList = udMapper.getYUdByFundID((Integer) map.get("fundId"));
             if (udList.size()==0) {
                 map.put("ud", "0.00");
@@ -288,12 +289,14 @@ public class MoneyController {
                 BigDecimal ud = new BigDecimal(udList.get(0).get("ud").toString());
                 map.put("ud", ud);
                 BigDecimal money = new BigDecimal(map.get("money").toString());
-                BigDecimal udMoney = money.subtract(money.divide(new BigDecimal("1.00").add(ud.divide(new BigDecimal("100")))));
+                BigDecimal Ymoney = money.divide(new BigDecimal("1.00").add(ud.divide(new BigDecimal("100"))));
+                BigDecimal udMoney = money.subtract(Ymoney);
                 map.put("y", udMoney);
+                map.put("ym", Ymoney);
             }
             map.put("c", new BigDecimal(map.get("money").toString()).subtract(new BigDecimal(map.get("initMoney").toString())));
         }
-        return ListUtils.combineMap(moneyList,"fundId","money");
+        return list;
     }
 }
 
